@@ -83,12 +83,9 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request'
-    permissions:
-      id-token: write
-      contents: read
     outputs:
-      api-image: ${{ steps.build-api.outputs.image }}
-      frontend-image: ${{ steps.build-frontend.outputs.image }}
+      api-image: ${{ steps.set-outputs.outputs.api-image }}
+      frontend-image: ${{ steps.set-outputs.outputs.frontend-image }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -96,7 +93,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
@@ -145,9 +143,6 @@ jobs:
     needs: build-and-push
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     environment:
       name: ${{ github.event.inputs.environment || (github.ref_name == 'main' && 'production' || 'staging') }}
       url: ${{ github.ref_name == 'main' && 'https://doctor-booking.example.com' || 'https://staging.doctor-booking.example.com' }}
@@ -158,7 +153,8 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Update kubeconfig
