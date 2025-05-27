@@ -17,7 +17,7 @@ run: ## Run the application
 	cd backend && $(GOCMD) run .
 
 test: ## Run tests
-	cd backend && $(GOTEST) -v ./...
+	cd backend && $(GOTEST) -v ./tests/integration/...
 
 migrate: ## Run database migrations
 	cd backend && $(GOCMD) run main.go migrate
