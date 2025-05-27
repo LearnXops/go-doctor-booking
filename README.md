@@ -3,55 +3,12 @@
   <p>
     <strong>A modern, scalable platform connecting patients with healthcare providers</strong>
   </p>
-  <p>
-    <a href="https://github.com/sandipdas/go-doctor-booking/actions/workflows/ci.yml">
-      <img src="https://github.com/sandipdas/go-doctor-booking/actions/workflows/ci.yml/badge.svg" alt="CI Status">
-    </a>
-    <a href="https://goreportcard.com/report/github.com/sandipdas/go-doctor-booking">
-      <img src="https://goreportcard.com/badge/github.com/sandipdas/go-doctor-booking" alt="Go Report Card">
-    </a>
-    <a href="https://github.com/sandipdas/go-doctor-booking/blob/main/LICENSE">
-      <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
-    </a>
-  </p>
+  
 </div>
 
 A full-stack web application built with Go (Gin) and React that revolutionizes the way patients book medical appointments. The platform provides a seamless experience for patients to find and book appointments with healthcare providers, while giving doctors powerful tools to manage their schedules and patient interactions.
 
-## 🌟 Key Features
 
-<details>
-<summary><b>For Patients</b></summary>
-
-- 🔍 Search and filter doctors by specialty, availability, and ratings
-- 📅 Book, reschedule, or cancel appointments with ease
-- 📱 Real-time notifications for appointment confirmations and reminders
-- 📊 View appointment history and medical records
-- ⭐ Rate and review healthcare providers
-- 🔒 Secure messaging with healthcare providers
-</details>
-
-<details>
-<summary><b>For Doctors</b></summary>
-
-- 🗓️ Intuitive calendar for managing availability and appointments
-- 📱 Mobile-responsive dashboard for on-the-go access
-- 📊 Analytics and reporting on patient visits and revenue
-- 📝 Digital prescription generation
-- 🔄 Sync with popular calendar applications
-- 📱 Secure patient communication portal
-</details>
-
-<details>
-<summary><b>For Administrators</b></summary>
-
-- 👥 User and role management
-- 📈 System-wide analytics and reporting
-- ⚙️ System configuration and settings
-- 📊 Financial reporting and billing
-- 📝 Content management for public pages
-- 🔒 Security and access control
-</details>
 
 ## 🛠 Technology Stack
 
