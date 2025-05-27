@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/sandipdas/go-doctor-booking/backend/api/v1"
+	v1 "github.com/sandipdas/go-doctor-booking/backend/api/v1"
 	"github.com/sandipdas/go-doctor-booking/backend/config"
 	"github.com/sandipdas/go-doctor-booking/backend/models"
 	"gorm.io/gorm"
@@ -50,6 +50,19 @@ func setupRouter() *gin.Engine {
 	corsConfig.AllowCredentials = true
 	corsConfig.AddAllowHeaders("Authorization")
 	r.Use(cors.New(corsConfig))
+
+	// Serve Swagger UI from /swagger-ui/ path
+	r.Static("/swagger-ui", "./docs")
+
+	// Redirect root to Swagger UI
+	r.GET("/swagger", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/swagger-ui/index.html")
+	})
+
+	// Serve Swagger JSON
+	r.GET("/swagger.json", func(c *gin.Context) {
+		c.File("./docs/swagger.json")
+	})
 
 	// Health check endpoint
 	r.GET("/health", func(c *gin.Context) {

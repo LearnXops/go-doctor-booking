@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.20-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /app/main .
 
 # Final stage
 FROM alpine:latest
@@ -27,16 +27,19 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /app/
 
 # Copy the binary from builder
-COPY --from=builder /app/main .
+COPY --from=builder /app/main /usr/local/bin/main
 
 # Copy the .env file
 COPY --from=builder /app/.env .
 
-# Copy the templates directory if you have any
-# COPY --from=builder /app/templates ./templates
+# Copy the docs directory for Swagger UI
+COPY --from=builder /app/docs /app/docs
+
+# Make the binary executable
+RUN chmod +x /usr/local/bin/main
 
 # Expose port
 EXPOSE 8080
 
 # Command to run the executable
-CMD ["/app/main"]
+CMD ["main"]

@@ -160,13 +160,144 @@ cd backend
 go test -v ./tests/integration/...
 ```
 
-## 🐳 Docker Support
+## 🐳 Docker Compose
 
-Build and run using Docker Compose:
+This project uses Docker Compose to manage multiple services in development and production environments.
 
+### Services Overview
+
+The `docker-compose.yml` defines the following services:
+
+1. **db** - PostgreSQL database service
+   - Port: 5432 (mapped to host)
+   - Database: `doctor_booking`
+   - Credentials: postgres/postgres
+   - Data is persisted in a Docker volume
+
+2. **api** - Backend API service
+   - Port: 8080 (mapped to host)
+   - Environment: development
+   - Automatically connects to the database
+   - Hot-reload enabled in development
+
+3. **frontend-dev** - Development frontend
+   - Port: 5173 (mapped to host)
+   - Hot-reloading enabled
+   - Uses local files via volume mounts
+
+4. **frontend-prod** - Production frontend
+   - Port: 8081 (mapped to host)
+   - Serves built static files via Nginx
+   - Optimized for production use
+
+### Prerequisites
+
+- Docker Engine 20.10.0+
+- Docker Compose 2.0.0+
+
+### Quick Start
+
+1. **Build and start all services**
+   ```bash
+   docker-compose up -d --build
+   ```
+
+2. **Access the services**
+   - Frontend (Development): http://localhost:5173
+   - Frontend (Production): http://localhost:8081
+   - Backend API: http://localhost:8080
+   - API Documentation: http://localhost:8080/swagger
+   - Database: localhost:5432 (use `doctor_booking` database)
+
+### Common Commands
+
+**Start services** (in background):
 ```bash
-docker-compose up --build
+docker-compose up -d
 ```
+
+**Stop all services**:
+```bash
+docker-compose down
+```
+
+**Rebuild and restart services**:
+```bash
+docker-compose up -d --build
+```
+
+**View logs**:
+```bash
+# View all logs
+docker-compose logs -f
+
+# View specific service logs
+docker-compose logs -f api
+docker-compose logs -f frontend-dev
+docker-compose logs -f db
+```
+
+**Run a command in a service**:
+```bash
+docker-compose exec api sh
+docker-compose exec db psql -U postgres
+```
+
+### Development Workflow
+
+1. **Frontend Development**
+   - The `frontend-dev` service has hot-reloading enabled
+   - Changes to files in the `frontend` directory will be reflected immediately
+   - Access at http://localhost:5173
+
+2. **Backend Development**
+   - The `api` service restarts automatically on code changes
+   - Environment variables can be set in `.env` or in `docker-compose.yml`
+
+3. **Database Management**
+   - Access the database using:
+     ```bash
+     docker-compose exec db psql -U postgres -d doctor_booking
+     ```
+   - Data is persisted in a Docker volume named `postgres_data`
+
+### Production Deployment
+
+For production, it's recommended to:
+1. Set `NODE_ENV=production` and `ENV=production`
+2. Use the `frontend-prod` service which serves optimized static files
+3. Configure proper SSL/TLS for all services
+4. Set up proper database backups
+
+### Environment Variables
+
+Key environment variables used in Docker Compose:
+
+```env
+# Database
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=doctor_booking
+
+# Backend
+DB_HOST=db
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=doctor_booking
+JWT_SECRET=your_jwt_secret_key_here
+ENV=development
+
+# Frontend
+VITE_API_BASE_URL=http://localhost:8080/api/v1
+NODE_ENV=development
+```
+
+### Troubleshooting
+
+- **Port conflicts**: Ensure ports 5432, 8080, 8081, and 5173 are available
+- **Build issues**: Run `docker-compose build --no-cache` to force a clean build
+- **Database connection issues**: Verify the database is running and accessible from the API container
 
 ## 🤝 Contributing
 
