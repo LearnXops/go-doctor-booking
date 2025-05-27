@@ -1,0 +1,167 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+  pull_request:
+    branches:
+      - main
+      - staging
+
+env:
+  DOCKER_IMAGE_API: ghcr.io/${{ github.repository_owner }}/doctor-booking-api
+  DOCKER_IMAGE_FRONTEND: ghcr.io/${{ github.repository_owner }}/doctor-booking-frontend
+  KUBE_NAMESPACE: ${{ github.ref_name == 'main' && 'doctor-booking-production' || 'doctor-booking-staging' }}
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  CONTAINER_REGISTRY: ghcr.io
+  CONTAINER_REGISTRY_USERNAME: ${{ secrets.GHCR_USERNAME }}
+  CONTAINER_REGISTRY_PASSWORD: ${{ secrets.GHCR_TOKEN }}
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/go/pkg/mod
+            backend/go.sum
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          go mod download
+          go install github.com/swaggo/swag/cmd/swag@latest
+          go install github.com/vektra/mockery/v2@latest
+
+      - name: Run backend tests
+        working-directory: ./backend
+        run: |
+          make test
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: |
+          npm test -- --watchAll=false --passWithNoTests
+
+  build-and-push:
+    name: Build and Push
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ env.DOCKER_IMAGE_API }}
+            ${{ env.DOCKER_IMAGE_FRONTEND }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha,format=long
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          target: production
+          file: ./backend/Dockerfile
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          target: production
+          file: ./frontend/Dockerfile
+
+  deploy:
+    name: Deploy
+    needs: build-and-push
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+      url: ${{ github.ref_name == 'main' && 'https://doctor-booking.example.com' || 'https://staging.doctor-booking.example.com' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure Kubernetes
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+          kubectl version --client
+
+      - name: Deploy to Kubernetes
+        run: |
+          # Update kustomization with the new image tags
+          cd deployment/k8s/overlays/${{ github.ref_name == 'main' && 'production' || 'staging' }}
+          
+          # Create namespace if it doesn't exist
+          kubectl create namespace ${{ env.KUBE_NAMESPACE }} --dry-run=client -o yaml | kubectl apply -f -
+          
+          # Apply the Kubernetes manifests
+          kubectl apply -k . --namespace=${{ env.KUBE_NAMESPACE }}
+          
+          # Wait for deployments to be ready
+          kubectl wait --for=condition=available --timeout=300s deployment/doctor-booking-api -n ${{ env.KUBE_NAMESPACE }}
+          kubectl wait --for=condition=available --timeout=300s deployment/doctor-booking-frontend -n ${{ env.KUBE_NAMESPACE }}
+
+      - name: Verify deployment
+        run: |
+          kubectl get all -n ${{ env.KUBE_NAMESPACE }}
+          kubectl get ingress -n ${{ env.KUBE_NAMESPACE }}
