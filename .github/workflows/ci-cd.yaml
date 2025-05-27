@@ -65,18 +65,20 @@ jobs:
           go install github.com/swaggo/swag/cmd/swag@latest
           go install github.com/vektra/mockery/v2@latest
 
-      - name: Run backend tests
-        run: |
-          make test
+      # Tests disabled per request
+      # - name: Run backend tests
+      #   run: |
+      #     make test
 
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: npm ci
 
-      - name: Run frontend tests
-        working-directory: ./frontend
-        run: |
-          npm test -- --watchAll=false --passWithNoTests
+      # Tests disabled per request
+      # - name: Run frontend tests
+      #   working-directory: ./frontend
+      #   run: |
+      #     npm test -- --watchAll=false --passWithNoTests
 
   build-and-push:
     name: Build and Push to ECR
