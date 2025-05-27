@@ -22,8 +22,8 @@ const DoctorDashboard = () => {
     const fetchAppointments = async () => {
       try {
         setLoading(true);
-        // In a real app, we would filter by doctor ID and date range
-        const response = await appointmentsApi.getAppointments();
+        // Get appointments for the current doctor
+        const response = await appointmentsApi.getDoctorAppointments();
         setAppointments(response.data);
       } catch (err) {
         console.error('Failed to fetch appointments', err);
@@ -57,7 +57,7 @@ const DoctorDashboard = () => {
 
   const updateAppointmentStatus = async (appointmentId: string, status: 'completed' | 'cancelled') => {
     try {
-      await appointmentsApi.updateAppointment(appointmentId, { status });
+      await appointmentsApi.updateAppointmentStatus(appointmentId, status);
       setAppointments(appointments.map(appt => 
         appt.id === appointmentId ? { ...appt, status } : appt
       ));

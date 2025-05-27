@@ -3,15 +3,62 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { appointmentsApi } from '../services/api';
 
-interface Appointment {
-  id: string;
-  doctorName: string;
-  doctorSpecialty: string;
-  date: string;
-  time: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
-  reason: string;
+interface User {
+  ID: number;
+  name: string;
+  email: string;
+  // Add other user fields as needed
 }
+
+interface Doctor {
+  ID: number;
+  user: User;
+  specialization: string;
+  // Add other doctor fields as needed
+}
+
+interface Patient {
+  ID: number;
+  User: User;
+  // Add other patient fields as needed
+}
+
+interface Appointment {
+  ID: number;
+  doctor_id: number;
+  doctor?: Doctor;  // Make it optional since it might come as 'doctor' or 'Doctor'
+  Doctor?: Doctor; // Keep for backward compatibility
+  patient_id: number;
+  Patient: Patient;
+  appointment_date: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  reason: string;
+  notes: string;
+  is_follow_up: boolean;
+  is_paid: boolean;
+  payment_amount: number;
+  created_at: string;
+  updated_at: string;
+}
+
+// Helper function to get the doctor from an appointment, handling both 'doctor' and 'Doctor' properties
+const getDoctor = (appointment: Appointment): Doctor | undefined => {
+  return appointment.doctor || appointment.Doctor;
+};
+
+// Helper function to get the doctor's name
+const getDoctorName = (appointment: Appointment): string | undefined => {
+  const doctor = getDoctor(appointment);
+  return doctor?.user?.name;
+};
+
+// Helper function to get the doctor's specialization
+const getDoctorSpecialization = (appointment: Appointment): string | undefined => {
+  const doctor = getDoctor(appointment);
+  return doctor?.specialization;
+};
 
 const Appointments = () => {
   const { user } = useAuth();
@@ -24,9 +71,26 @@ const Appointments = () => {
     const fetchAppointments = async () => {
       try {
         setLoading(true);
-        // In a real app, we would filter by user ID and date range
-        const response = await appointmentsApi.getAppointments();
-        setAppointments(response.data);
+        // Get appointments for the current user
+        const response = await appointmentsApi.getPatientAppointments();
+        console.log('Full response:', JSON.stringify(response, null, 2));
+        
+        if (response.data && response.data.length > 0) {
+          console.log('First appointment:', response.data[0]);
+          // Log all keys in the first appointment
+          console.log('First appointment keys:', Object.keys(response.data[0]));
+          // Log the doctor data directly from the response
+          console.log('Doctor data from response:', response.data[0].doctor);
+        }
+        
+        // Map the response to match our interface
+        const formattedAppointments = response.data.map((appt: any) => ({
+          ...appt,
+          // If the backend returns 'doctor' instead of 'Doctor', map it
+          Doctor: appt.doctor || appt.Doctor
+        }));
+        
+        setAppointments(formattedAppointments);
       } catch (err) {
         console.error('Failed to fetch appointments', err);
         setError('Failed to load appointments. Please try again later.');
@@ -38,6 +102,32 @@ const Appointments = () => {
     fetchAppointments();
   }, [activeTab]);
 
+
+
+  const filteredAppointments = appointments.filter(appointment => {
+    const now = new Date();
+    const startTime = new Date(appointment.start_time);
+    
+    return activeTab === 'upcoming' 
+      ? startTime >= now
+      : startTime < now;
+  });
+
+  const cancelAppointment = async (appointmentId: number) => {
+    if (window.confirm('Are you sure you want to cancel this appointment?')) {
+      try {
+        await appointmentsApi.cancelAppointment(appointmentId.toString());
+        setAppointments(appointments.map(appt => 
+          appt.ID === appointmentId ? { ...appt, status: 'cancelled' } : appt
+        ));
+      } catch (err) {
+        console.error('Failed to cancel appointment', err);
+        setError('Failed to cancel appointment. Please try again.');
+      }
+    }
+  };
+  
+  // Format date for display
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = { 
       year: 'numeric', 
@@ -47,28 +137,13 @@ const Appointments = () => {
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
-
-  const filteredAppointments = appointments.filter(appointment => {
-    const appointmentDate = new Date(`${appointment.date}T${appointment.time}`);
-    const now = new Date();
-    
-    return activeTab === 'upcoming' 
-      ? appointmentDate >= now
-      : appointmentDate < now;
-  });
-
-  const cancelAppointment = async (appointmentId: string) => {
-    if (window.confirm('Are you sure you want to cancel this appointment?')) {
-      try {
-        await appointmentsApi.updateAppointment(appointmentId, { status: 'cancelled' });
-        setAppointments(appointments.map(appt => 
-          appt.id === appointmentId ? { ...appt, status: 'cancelled' } : appt
-        ));
-      } catch (err) {
-        console.error('Failed to cancel appointment', err);
-        setError('Failed to cancel appointment. Please try again.');
-      }
-    }
+  
+  // Format time for display
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString([], { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
   };
 
   return (
@@ -158,7 +233,7 @@ const Appointments = () => {
                   className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                    <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 01-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
                   </svg>
                   Book New Appointment
                 </Link>
@@ -168,15 +243,20 @@ const Appointments = () => {
             <div className="bg-white shadow overflow-hidden sm:rounded-md mt-6">
               <ul className="divide-y divide-gray-200">
                 {filteredAppointments.map((appointment) => (
-                  <li key={appointment.id}>
+                  <li key={appointment.ID}>
                     <div className="px-4 py-4 sm:px-6">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium text-blue-600 truncate">
-                          Dr. {appointment.doctorName}
-                        </p>
+                        <div>
+                          <p className="text-sm font-medium text-blue-600 truncate">
+                            Doctor: {getDoctorName(appointment) || 'Unknown Doctor'}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {getDoctorSpecialization(appointment) || 'General Practice'}
+                          </p>
+                        </div>
                         <div className="ml-2 flex-shrink-0 flex">
                           <p className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            appointment.status === 'scheduled' 
+                            appointment.status === 'scheduled' || appointment.status === 'pending'
                               ? 'bg-green-100 text-green-800' 
                               : appointment.status === 'completed' 
                                 ? 'bg-blue-100 text-blue-800' 
@@ -192,13 +272,13 @@ const Appointments = () => {
                             <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
                             </svg>
-                            {formatDate(appointment.date)}
+                            {formatDate(appointment.appointment_date)}
                           </p>
                           <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
                             <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                             </svg>
-                            {appointment.time}
+                            {formatTime(appointment.start_time)} - {formatTime(appointment.end_time)}
                           </p>
                         </div>
                         <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
@@ -207,7 +287,7 @@ const Appointments = () => {
                             <path d="M5.25 12.75a.75.75 0 01.75.75v.5a.75.75 0 01-1.5 0v-.5a.75.75 0 01.75-.75z" />
                             <path d="M14.25 12.75a.75.75 0 01.75.75v.5a.75.75 0 01-1.5 0v-.5a.75.75 0 01.75-.75z" />
                           </svg>
-                          {appointment.doctorSpecialty}
+                          {appointment.Doctor?.specialization || 'General Practice'}
                         </div>
                       </div>
                       <div className="mt-2">
@@ -218,13 +298,13 @@ const Appointments = () => {
                       {activeTab === 'upcoming' && appointment.status === 'scheduled' && (
                         <div className="mt-4 flex space-x-3">
                           <button
-                            onClick={() => cancelAppointment(appointment.id)}
+                            onClick={() => cancelAppointment(appointment.ID)}
                             className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                           >
                             Cancel Appointment
                           </button>
                           <Link
-                            to={`/appointments/${appointment.id}/reschedule`}
+                            to={`/book-appointment?doctor_id=${appointment.doctor_id}&appointment_id=${appointment.ID}`}
                             className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                           >
                             Reschedule

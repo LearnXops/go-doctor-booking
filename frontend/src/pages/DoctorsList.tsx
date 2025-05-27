@@ -35,8 +35,18 @@ const DoctorsList = () => {
       try {
         setLoading(true);
         const response = await doctorsApi.getDoctors();
-        const doctorsData = Array.isArray(response.data) ? response.data : [];
-        setDoctors(doctorsData);
+        // Handle the API response format: response.data contains the array of doctors
+        const doctorsData = response?.data?.data || [];
+        // Map the API response to match our Doctor interface
+        const formattedDoctors = doctorsData.map((doctor: any) => ({
+          id: String(doctor.id),
+          name: doctor.name,
+          specialty: doctor.specialization || 'General Physician',
+          bio: doctor.bio || 'No bio available',
+          experience: doctor.experience,
+          consultationFee: doctor.consultation_fee
+        }));
+        setDoctors(formattedDoctors);
       } catch (err) {
         console.error('Failed to fetch doctors', err);
         setError('Failed to load doctors. Please try again later.');

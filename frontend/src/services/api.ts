@@ -74,31 +74,51 @@ export const authApi = {
   
   register: (name: string, email: string, password: string, role: string): Promise<AxiosResponse> => 
     api.post('/auth/register', { name, email, password, role }),
-  
-  getProfile: () => api.get('/auth/me'),
 };
 
 // Appointments API
 export const appointmentsApi = {
-  getAppointments: () => api.get('/appointments'),
-  getAppointment: (id: string) => api.get(`/appointments/${id}`),
-  createAppointment: (data: any) => api.post('/appointments', data),
-  updateAppointment: (id: string, data: any) => api.put(`/appointments/${id}`, data),
-  deleteAppointment: (id: string) => api.delete(`/appointments/${id}`),
+  // Patient appointment endpoints
+  getPatientAppointments: () => api.get('/patients/appointments'),
+  bookAppointment: (data: any) => api.post('/patients/appointments', data),
+  cancelAppointment: (id: string) => api.put(`/patients/appointments/${id}/cancel`),
+  
+  // Doctor appointment endpoints
+  getDoctorAppointments: () => api.get('/doctors/appointments'),
+  updateAppointmentStatus: (id: string, status: string) => 
+    api.put(`/doctors/appointments/${id}/status`, { status }),
 };
 
 // Doctors API
 export const doctorsApi = {
+  // Public endpoints (no auth required)
   getDoctors: () => api.get('/doctors'),
   getDoctor: (id: string) => api.get(`/doctors/${id}`),
+  
+  // Patient endpoints
   getAvailableSlots: (doctorId: string, date: string) => 
-    api.get(`/doctors/${doctorId}/slots?date=${date}`),
+    api.get(`/patients/doctors/${doctorId}/availability`, { params: { date } }),
+  
+  // Doctor endpoints (protected)
+  getDoctorDashboard: () => api.get('/doctors/dashboard'),
+  createSchedule: (data: any) => api.post('/doctors/schedules', data),
 };
 
 // Users API
 export const usersApi = {
-  getProfile: () => api.get('/users/me'),
-  updateProfile: (data: any) => api.put('/users/me', data),
+  getProfile: () => api.get('/users/profile'),
+  updateProfile: (data: any) => api.put('/users/profile', data),
+};
+
+// Admin API
+export const adminApi = {
+  // User management
+  listAllUsers: () => api.get('/admin/users'),
+  updateUserStatus: (id: string, status: string) => 
+    api.put(`/admin/users/${id}/status`, { status }),
+  
+  // Appointments
+  listAllAppointments: () => api.get('/admin/appointments'),
 };
 
 export default api;

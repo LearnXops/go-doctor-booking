@@ -34,6 +34,12 @@ const BookAppointment = () => {
   const [reason, setReason] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  
+  // Debug log for state changes
+  useEffect(() => {
+    console.log('selectedSlot changed:', selectedSlot);
+    console.log('isSubmitting:', isSubmitting);
+  }, [selectedSlot, isSubmitting]);
 
   useEffect(() => {
     const fetchDoctorDetails = async () => {
@@ -59,10 +65,41 @@ const BookAppointment = () => {
       try {
         setLoading(true);
         const response = await doctorsApi.getAvailableSlots(doctorId!, date);
-        setTimeSlots(response.data);
+        
+        // Log the response for debugging
+        console.log('Available slots response:', response.data);
+        
+        // Check if we have available_slots in the response
+        const slots = response.data?.available_slots || [];
+        
+        // Convert time strings to TimeSlot objects
+        const formattedSlots = slots.map((timeString: string, index: number) => {
+          // Parse the time string (e.g., "09:00") to a Date object
+          const time = new Date(`2000-01-01T${timeString}`);
+          
+          // Calculate end time by adding 30 minutes
+          const endTime = new Date(time);
+          endTime.setMinutes(endTime.getMinutes() + 30);
+          
+          // Format times as HH:MM
+          const formatTime = (date: Date) => {
+            return date.toTimeString().slice(0, 5);
+          };
+          
+          return {
+            id: `slot-${index}`,
+            startTime: formatTime(time),
+            endTime: formatTime(endTime),
+            isAvailable: true
+          };
+        });
+        
+        console.log('Formatted time slots:', formattedSlots);
+        setTimeSlots(formattedSlots);
       } catch (err) {
         console.error('Failed to fetch available slots', err);
         setError('Failed to load available time slots. Please try again.');
+        setTimeSlots([]); // Reset to empty array on error
       } finally {
         setLoading(false);
       }
@@ -88,19 +125,40 @@ const BookAppointment = () => {
       setIsSubmitting(true);
       setError('');
       
+      if (!doctorId) {
+        throw new Error('Doctor ID is missing');
+      }
+      
       const selectedTimeSlot = timeSlots.find(slot => slot.id === selectedSlot);
       if (!selectedTimeSlot) {
         throw new Error('Selected time slot not found');
       }
 
-      await appointmentsApi.createAppointment({
-        doctorId,
-        date,
-        startTime: selectedTimeSlot.startTime,
-        endTime: selectedTimeSlot.endTime,
-        reason,
-      });
+      // Parse the date and time to create a proper datetime string
+      if (!selectedTimeSlot.startTime) {
+        throw new Error('Start time is missing');
+      }
       
+      const scheduledAt = new Date(`${date}T${selectedTimeSlot.startTime}`);
+      const doctorIdNum = parseInt(doctorId, 10);
+      
+      if (isNaN(doctorIdNum)) {
+        throw new Error('Invalid doctor ID');
+      }
+      
+      console.log('Creating appointment with data:', {
+        doctor_id: doctorIdNum,
+        scheduled_at: scheduledAt.toISOString(),
+        notes: reason,
+      });
+
+      const response = await appointmentsApi.bookAppointment({
+        doctor_id: doctorIdNum,
+        scheduled_at: scheduledAt.toISOString(),
+        notes: reason,
+      });
+
+      console.log('Appointment created successfully:', response.data);
       setSuccess(true);
       
       // Redirect to appointments page after a short delay
@@ -108,9 +166,16 @@ const BookAppointment = () => {
         navigate('/appointments');
       }, 2000);
       
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to book appointment', err);
-      setError('Failed to book appointment. Please try again.');
+      console.error('Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      
+      const errorMessage = err.response?.data?.message || 'Failed to book appointment. Please try again.';
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -293,7 +358,10 @@ const BookAppointment = () => {
                                   key={slot.id}
                                   type="button"
                                   disabled={!slot.isAvailable}
-                                  onClick={() => setSelectedSlot(slot.id)}
+                                  onClick={() => {
+                                    console.log('Time slot clicked:', slot.id);
+                                    setSelectedSlot(slot.id);
+                                  }}
                                   className={`py-2 px-3 border rounded-md text-sm font-medium ${
                                     selectedSlot === slot.id
                                       ? 'bg-blue-100 border-blue-500 text-blue-700'

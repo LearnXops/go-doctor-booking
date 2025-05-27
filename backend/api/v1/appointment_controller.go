@@ -231,17 +231,19 @@ func GetPatientAppointments(db *gorm.DB) gin.HandlerFunc {
 		query := db.Model(&models.Appointment{}).
 			Where("patient_id = ?", userID).
 			Preload("Doctor").
-			Order("scheduled_at DESC")
+			Preload("Doctor.User").
+			Preload("Patient").
+			Order("appointment_date DESC, start_time DESC")
 
 		// Apply filters
 		if status != "" {
 			query = query.Where("status = ?", status)
 		}
 		if startDate != "" {
-			query = query.Where("scheduled_at >= ?", startDate)
+			query = query.Where("appointment_date >= ?", startDate)
 		}
 		if endDate != "" {
-			query = query.Where("scheduled_at <= ?", endDate)
+			query = query.Where("appointment_date <= ?", endDate)
 		}
 
 		// Execute query

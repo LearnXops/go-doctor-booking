@@ -99,9 +99,9 @@ A full-stack web application for booking doctor consultations built with Go (Gin
 
 3. **Start the development server**
    ```bash
-   npm start
+   npm run dev
    ```
-   The frontend will be available at `http://localhost:3000`
+   The frontend will be available at `http://localhost:5173`
 
 ## 📚 API Documentation
 
