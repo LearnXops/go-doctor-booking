@@ -163,6 +163,10 @@ _override.tf.json
 # Ignore local terraform docs directory
 .terraform/docs/
 
+# Allow kustomization files
+!kustomization.yaml
+!**/kustomization.yaml
+
 # Ignore local terraform modules directory
 .terraform/modules/
 
