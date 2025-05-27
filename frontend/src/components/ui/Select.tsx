@@ -1,5 +1,6 @@
-import React, { SelectHTMLAttributes, forwardRef } from 'react';
-import { FieldError } from 'react-hook-form';
+import React, { forwardRef } from 'react';
+import type { SelectHTMLAttributes } from 'react';
+import type { FieldError } from 'react-hook-form';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
 type SelectSize = 'sm' | 'md' | 'lg';
@@ -10,10 +11,10 @@ interface SelectOption {
   disabled?: boolean;
 }
 
-interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   label?: string;
   error?: FieldError | string;
-  size?: SelectSize;
+  selectSize?: SelectSize;
   fullWidth?: boolean;
   options: SelectOption[];
   placeholder?: string;
@@ -32,13 +33,13 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
     {
       label,
       error,
-      size = 'md',
+      selectSize = 'md',
       fullWidth = false,
-      options,
+      options = [],
       placeholder = 'Select an option',
-      className = '',
       containerClassName = '',
       leftIcon,
+      className = '',
       id,
       ...props
     },
@@ -53,7 +54,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
       'focus:ring-1 focus:ring-opacity-50',
       'disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed',
       'appearance-none',
-      sizeClasses[size],
+      sizeClasses[selectSize],
       hasError
         ? 'border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500'
         : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',

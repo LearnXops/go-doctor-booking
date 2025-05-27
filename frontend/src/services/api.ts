@@ -2,7 +2,6 @@ import axios, {
   type AxiosInstance,
   type AxiosResponse,
   type AxiosError,
-  type AxiosRequestConfig,
 } from 'axios';
 
 const BASE_URL = 'http://localhost:8080/api/v1';

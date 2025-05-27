@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface WindowSize {
   /** Width of the window in pixels */
@@ -76,7 +76,7 @@ function useWindowSize(options: {
     },
   }));
 
-  const resizeTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const resizeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Memoize the matches function to prevent unnecessary re-renders
   const matches = useCallback((query: string): boolean => {

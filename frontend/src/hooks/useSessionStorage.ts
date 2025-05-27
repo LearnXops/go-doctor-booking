@@ -213,5 +213,8 @@ export function useStorage<T>(
     : useSessionStorage(key, initialValue);
 }
 
+// Import useLocalStorage for use in the useStorage function
+import useLocalStorage from './useLocalStorage';
+
 // Re-export useLocalStorage for convenience
-export { useLocalStorage } from './useLocalStorage';
+export { useLocalStorage };

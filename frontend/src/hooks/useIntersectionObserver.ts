@@ -1,4 +1,5 @@
-import { RefObject, useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import type { RefObject } from 'react';
 
 interface IntersectionObserverOptions extends IntersectionObserverInit {
   /**
@@ -153,7 +154,6 @@ function useIntersectionObserver(
     }
     
     let observer: IntersectionObserver;
-    let current: Element | null = node;
     
     const handleIntersect: IntersectionObserverCallback = (entries, observer) => {
       const [entry] = entries;

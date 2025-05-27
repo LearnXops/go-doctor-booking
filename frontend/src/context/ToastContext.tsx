@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useCallback, useRef, useState } from 'react';
+import { createContext, useContext, useCallback, useRef, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import Toast, { ToastProps, ToastVariant } from '../components/ui/Toast';
+import { Toast } from '../components/ui/Toast';
+import type { ToastProps } from '../components/ui/Toast';
 
 export type ToastOptions = Omit<ToastProps, 'id' | 'isOpen' | 'onClose' | 'message'> & {
   id?: string;
@@ -14,17 +16,21 @@ type ToastType = ToastProps & {
 
 type ToastContextType = {
   toasts: ToastType[];
-  addToast: (message: React.ReactNode, options?: ToastOptions) => string;
+  addToast: (message: ReactNode, options?: ToastOptions) => string;
   removeToast: (id: string) => void;
-  success: (message: React.ReactNode, options?: Omit<ToastOptions, 'variant'>) => string;
-  error: (message: React.ReactNode, options?: Omit<ToastOptions, 'variant'>) => string;
-  warning: (message: React.ReactNode, options?: Omit<ToastOptions, 'variant'>) => string;
-  info: (message: React.ReactNode, options?: Omit<ToastOptions, 'variant'>) => string;
+  success: (message: ReactNode, options?: Omit<ToastOptions, 'variant'>) => string;
+  error: (message: ReactNode, options?: Omit<ToastOptions, 'variant'>) => string;
+  warning: (message: ReactNode, options?: Omit<ToastOptions, 'variant'>) => string;
+  info: (message: ReactNode, options?: Omit<ToastOptions, 'variant'>) => string;
 };
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface ToastProviderProps {
+  children: ReactNode;
+}
+
+export const ToastProvider = ({ children }: ToastProviderProps) => {
   const [toasts, setToasts] = useState<ToastType[]>([]);
   const toastRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
@@ -33,7 +39,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     delete toastRefs.current[id];
   }, []);
 
-  const addToast = useCallback((message: React.ReactNode, options: ToastOptions = {}) => {
+  const addToast = useCallback((message: ReactNode, options: ToastOptions = {}): string => {
     const id = options.id || uuidv4();
     const duration = options.duration ?? 5000;
 
@@ -72,28 +78,28 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Helper methods for common toast types
   const success = useCallback(
-    (message: React.ReactNode, options: Omit<ToastOptions, 'variant'> = {}) => {
+    (message: ReactNode, options: Omit<ToastOptions, 'variant'> = {}): string => {
       return addToast(message, { ...options, variant: 'success' });
     },
     [addToast]
   );
 
   const error = useCallback(
-    (message: React.ReactNode, options: Omit<ToastOptions, 'variant'> = {}) => {
+    (message: ReactNode, options: Omit<ToastOptions, 'variant'> = {}): string => {
       return addToast(message, { ...options, variant: 'error' });
     },
     [addToast]
   );
 
   const warning = useCallback(
-    (message: React.ReactNode, options: Omit<ToastOptions, 'variant'> = {}) => {
+    (message: ReactNode, options: Omit<ToastOptions, 'variant'> = {}): string => {
       return addToast(message, { ...options, variant: 'warning' });
     },
     [addToast]
   );
 
   const info = useCallback(
-    (message: React.ReactNode, options: Omit<ToastOptions, 'variant'> = {}) => {
+    (message: ReactNode, options: Omit<ToastOptions, 'variant'> = {}): string => {
       return addToast(message, { ...options, variant: 'info' });
     },
     [addToast]
@@ -108,24 +114,24 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 
   // Clean up all toasts when the component unmounts
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       Object.keys(toastRefs.current).forEach(removeToast);
     };
   }, [removeToast]);
 
+  const contextValue = {
+    toasts,
+    addToast,
+    removeToast,
+    success,
+    error,
+    warning,
+    info,
+  };
+
   return (
-    <ToastContext.Provider
-      value={{
-        toasts,
-        addToast,
-        removeToast,
-        success,
-        error,
-        warning,
-        info,
-      }}
-    >
+    <ToastContext.Provider value={contextValue}>
       {children}
       <div className="fixed z-50">
         {toasts.map((toast) => (

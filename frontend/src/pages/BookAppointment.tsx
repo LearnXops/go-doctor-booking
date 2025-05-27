@@ -22,7 +22,7 @@ interface TimeSlot {
 
 const BookAppointment = () => {
   const { id: doctorId } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user: _ } = useAuth();
   const navigate = useNavigate();
   
   const [doctor, setDoctor] = useState<Doctor | null>(null);

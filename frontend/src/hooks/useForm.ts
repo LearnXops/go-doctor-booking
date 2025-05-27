@@ -121,14 +121,18 @@ const useForm = <T extends Record<string, any>>(
       try {
         await onSubmit(values);
         return true;
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Form submission error:', error);
         // Handle API validation errors here if needed
-        if (error.response?.data?.errors) {
-          setErrors(error.response.data.errors);
+        if (error && typeof error === 'object' && 'response' in error && 
+            error.response && typeof error.response === 'object' && 
+            'data' in error.response && error.response.data && 
+            typeof error.response.data === 'object' && 'errors' in error.response.data) {
+          setErrors((error.response.data as { errors: FormErrors<T> }).errors);
         } else {
+          const errorMessage = error instanceof Error ? error.message : 'An error occurred. Please try again.';
           setErrors({
-            form: error.message || 'An error occurred. Please try again.',
+            form: errorMessage,
           } as FormErrors<T>);
         }
         return false;

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { appointmentsApi } from '../services/api';
+import { formatDate, formatTime, isPastDate } from '../utils/dateUtils';
 
 interface User {
   ID: number;
@@ -49,19 +50,19 @@ const getDoctor = (appointment: Appointment): Doctor | undefined => {
 };
 
 // Helper function to get the doctor's name
-const getDoctorName = (appointment: Appointment): string | undefined => {
+const getDoctorName = (appointment: Appointment): string => {
   const doctor = getDoctor(appointment);
-  return doctor?.user?.name;
+  return doctor?.user?.name || 'Unknown Doctor';
 };
 
 // Helper function to get the doctor's specialization
-const getDoctorSpecialization = (appointment: Appointment): string | undefined => {
+const getDoctorSpecialization = (appointment: Appointment): string => {
   const doctor = getDoctor(appointment);
-  return doctor?.specialization;
+  return doctor?.specialization || 'General Practice';
 };
 
 const Appointments = () => {
-  const { user } = useAuth();
+  const { user: _ } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -105,45 +106,26 @@ const Appointments = () => {
 
 
   const filteredAppointments = appointments.filter(appointment => {
-    const now = new Date();
-    const startTime = new Date(appointment.start_time);
+    if (!appointment.start_time) return false;
     
-    return activeTab === 'upcoming' 
-      ? startTime >= now
-      : startTime < now;
+    const isPast = isPastDate(appointment.start_time);
+    return activeTab === 'upcoming' ? !isPast : isPast;
   });
 
   const cancelAppointment = async (appointmentId: number) => {
     if (window.confirm('Are you sure you want to cancel this appointment?')) {
       try {
         await appointmentsApi.cancelAppointment(appointmentId.toString());
-        setAppointments(appointments.map(appt => 
-          appt.ID === appointmentId ? { ...appt, status: 'cancelled' } : appt
-        ));
+        setAppointments(prevAppointments => 
+          prevAppointments.map(appt => 
+            appt.ID === appointmentId ? { ...appt, status: 'cancelled' } : appt
+          )
+        );
       } catch (err) {
         console.error('Failed to cancel appointment', err);
         setError('Failed to cancel appointment. Please try again.');
       }
     }
-  };
-  
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric',
-      weekday: 'long'
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
-  
-  // Format time for display
-  const formatTime = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
   };
 
   return (

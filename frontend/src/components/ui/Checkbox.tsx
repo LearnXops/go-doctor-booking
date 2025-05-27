@@ -1,12 +1,13 @@
-import React, { InputHTMLAttributes, forwardRef } from 'react';
-import { FieldError } from 'react-hook-form';
+import React, { forwardRef } from 'react';
+import type { InputHTMLAttributes } from 'react';
+import type { FieldError } from 'react-hook-form';
 
 type CheckboxSize = 'sm' | 'md' | 'lg';
 
-interface CheckboxProps extends InputHTMLAttributes<HTMLInputElement> {
+interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string | React.ReactNode;
   error?: FieldError | string;
-  size?: CheckboxSize;
+  checkboxSize?: CheckboxSize;
   containerClassName?: string;
   labelClassName?: string;
   description?: string;
@@ -29,7 +30,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     {
       label,
       error,
-      size = 'md',
+      checkboxSize = 'md',
       className = '',
       containerClassName = '',
       labelClassName = '',
@@ -47,7 +48,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       'rounded',
       'focus:ring-2 focus:ring-offset-2',
       'disabled:opacity-50 disabled:cursor-not-allowed',
-      sizeClasses[size],
+      sizeClasses[checkboxSize],
       hasError
         ? 'border-red-300 text-red-600 focus:ring-red-500 focus:ring-offset-0'
         : 'border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0',
@@ -61,7 +62,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
 
     const labelClasses = [
       'font-medium',
-      textSizeClasses[size],
+      textSizeClasses[checkboxSize],
       hasError ? 'text-red-700' : 'text-gray-700',
       isDisabled ? 'opacity-50' : '',
       labelClassName,
@@ -69,7 +70,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
 
     const descriptionClasses = [
       'mt-1',
-      textSizeClasses[size],
+      textSizeClasses[checkboxSize],
       hasError ? 'text-red-600' : 'text-gray-500',
       isDisabled ? 'opacity-50' : '',
     ].filter(Boolean).join(' ');

@@ -1,12 +1,13 @@
-import React, { InputHTMLAttributes, forwardRef } from 'react';
-import { FieldError } from 'react-hook-form';
+import React, { forwardRef } from 'react';
+import type { InputHTMLAttributes } from 'react';
+import type { FieldError } from 'react-hook-form';
 
 type InputSize = 'sm' | 'md' | 'lg';
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: string;
   error?: FieldError | string;
-  size?: InputSize;
+  inputSize?: InputSize;
   fullWidth?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -24,7 +25,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     {
       label,
       error,
-      size = 'md',
+      inputSize = 'md',
       fullWidth = false,
       leftIcon,
       rightIcon,
@@ -43,7 +44,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       'block w-full rounded-md shadow-sm',
       'focus:ring-1 focus:ring-opacity-50',
       'disabled:bg-gray-100 disabled:text-gray-500',
-      sizeClasses[size],
+      sizeClasses[inputSize],
       hasError
         ? 'border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500'
         : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',

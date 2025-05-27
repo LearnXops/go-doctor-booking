@@ -1,12 +1,13 @@
-import React, { TextareaHTMLAttributes, forwardRef } from 'react';
-import { FieldError } from 'react-hook-form';
+import { forwardRef, useId } from 'react';
+import type { TextareaHTMLAttributes } from 'react';
+import type { FieldError } from 'react-hook-form';
 
 type TextareaSize = 'sm' | 'md' | 'lg';
 
-interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {
   label?: string;
   error?: FieldError | string;
-  size?: TextareaSize;
+  textareaSize?: TextareaSize;
   fullWidth?: boolean;
   containerClassName?: string;
   rows?: number;
@@ -23,7 +24,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     {
       label,
       error,
-      size = 'md',
+      textareaSize = 'md',
       fullWidth = false,
       className = '',
       containerClassName = '',
@@ -33,7 +34,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     },
     ref
   ) => {
-    const inputId = id || React.useId();
+    const inputId = id || `textarea-${useId()}`;
     const hasError = !!error;
     const isDisabled = props.disabled;
 
@@ -41,41 +42,34 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       'block w-full rounded-md shadow-sm',
       'focus:ring-1 focus:ring-opacity-50',
       'disabled:bg-gray-100 disabled:text-gray-500',
-      sizeClasses[size],
+      sizeClasses[textareaSize],
       hasError
         ? 'border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500'
         : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500',
       className,
     ].filter(Boolean).join(' ');
 
-    const containerClasses = [
-      'space-y-1',
-      fullWidth ? 'w-full' : 'max-w-2xl',
-      containerClassName,
-    ].filter(Boolean).join(' ');
-
     return (
-      <div className={containerClasses}>
+      <div className={`${fullWidth ? 'w-full' : 'w-auto'} ${containerClassName}`}>
         {label && (
           <label
             htmlFor={inputId}
-            className={`block text-sm font-medium ${
-              hasError ? 'text-red-700' : 'text-gray-700'
+            className={`block text-sm font-medium mb-1 ${
+              hasError ? 'text-red-600' : 'text-gray-700'
             }`}
           >
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
-        <div className="mt-1">
+        <div className="relative">
           <textarea
-            ref={ref}
             id={inputId}
-            rows={rows}
+            ref={ref}
             className={textareaClasses}
+            rows={rows}
+            disabled={isDisabled}
             aria-invalid={hasError ? 'true' : 'false'}
             aria-describedby={hasError ? `${inputId}-error` : undefined}
-            disabled={isDisabled}
             {...props}
           />
         </div>
@@ -91,4 +85,5 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
 
 Textarea.displayName = 'Textarea';
 
-export default Textarea;
+export { Textarea };
+export type { TextareaProps, TextareaSize };
