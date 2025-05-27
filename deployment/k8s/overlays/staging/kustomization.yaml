@@ -1,0 +1,56 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: doctor-booking-staging
+
+resources:
+- ../../base
+
+nameSuffix: -staging
+
+commonLabels:
+  environment: staging
+
+images:
+- name: your-ecr-repo/doctor-booking-api
+  newTag: "staging-latest"
+- name: your-ecr-repo/doctor-booking-frontend
+  newTag: "staging-latest"
+
+patchesStrategicMerge:
+- |
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: api
+  spec:
+    replicas: 2
+    template:
+      spec:
+        containers:
+        - name: api
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+- |
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: frontend
+  spec:
+    replicas: 2
+    template:
+      spec:
+        containers:
+        - name: frontend
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"

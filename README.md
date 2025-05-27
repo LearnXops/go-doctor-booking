@@ -299,6 +299,30 @@ NODE_ENV=development
 - **Build issues**: Run `docker-compose build --no-cache` to force a clean build
 - **Database connection issues**: Verify the database is running and accessible from the API container
 
+## 🚀 Deployment
+
+The application can be deployed to AWS EKS using the provided Terraform and Kubernetes configurations. See the [deployment guide](deployment/README.md) for detailed instructions.
+
+### Quick Start
+
+1. Set up AWS infrastructure:
+   ```bash
+   cd deployment/terraform
+   terraform init
+   terraform apply -var="db_password=your_secure_password"
+   ```
+
+2. Deploy the application to Kubernetes:
+   ```bash
+   # For staging
+   kubectl apply -k deployment/k8s/overlays/staging
+   
+   # For production
+   kubectl apply -k deployment/k8s/overlays/production
+   ```
+
+For more details, see the [deployment documentation](deployment/README.md).
+
 ## 🤝 Contributing
 
 1. Fork the repository

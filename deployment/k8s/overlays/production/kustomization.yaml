@@ -1,0 +1,86 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: doctor-booking-production
+
+resources:
+- ../../base
+
+nameSuffix: -prod
+
+commonLabels:
+  environment: production
+
+images:
+- name: your-ecr-repo/doctor-booking-api
+  newTag: "v1.0.0"  # Use versioned tags in production
+- name: your-ecr-repo/doctor-booking-frontend
+  newTag: "v1.0.0"  # Use versioned tags in production
+
+patchesStrategicMerge:
+- |
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: api
+  spec:
+    replicas: 3
+    template:
+      spec:
+        containers:
+        - name: api
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+- |
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: frontend
+  spec:
+    replicas: 3
+    template:
+      spec:
+        containers:
+        - name: frontend
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
