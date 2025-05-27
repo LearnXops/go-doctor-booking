@@ -1,335 +1,277 @@
-# Doctor Consultation Booking System
+<div align="center">
+  <h1>🩺 Doctor Consultation Booking System</h1>
+  <p>
+    <strong>A modern, scalable platform connecting patients with healthcare providers</strong>
+  </p>
+  <p>
+    <a href="https://github.com/sandipdas/go-doctor-booking/actions/workflows/ci.yml">
+      <img src="https://github.com/sandipdas/go-doctor-booking/actions/workflows/ci.yml/badge.svg" alt="CI Status">
+    </a>
+    <a href="https://goreportcard.com/report/github.com/sandipdas/go-doctor-booking">
+      <img src="https://goreportcard.com/badge/github.com/sandipdas/go-doctor-booking" alt="Go Report Card">
+    </a>
+    <a href="https://github.com/sandipdas/go-doctor-booking/blob/main/LICENSE">
+      <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
+    </a>
+  </p>
+</div>
 
-A full-stack web application for booking doctor consultations built with Go (Gin) and React. This application allows patients to book appointments with doctors, manage their profiles, and view appointment history. Doctors can manage their schedules and view upcoming appointments.
+A full-stack web application built with Go (Gin) and React that revolutionizes the way patients book medical appointments. The platform provides a seamless experience for patients to find and book appointments with healthcare providers, while giving doctors powerful tools to manage their schedules and patient interactions.
 
-## ✨ Features
+## 🌟 Key Features
 
-- **User Authentication**
-  - Patient and Doctor registration and login
-  - JWT-based authentication
-  - Role-based access control
+<details>
+<summary><b>For Patients</b></summary>
 
-- **Patient Features**
-  - Search and view doctor profiles
-  - Book, reschedule, and cancel appointments
-  - View appointment history
-  - Update profile information
+- 🔍 Search and filter doctors by specialty, availability, and ratings
+- 📅 Book, reschedule, or cancel appointments with ease
+- 📱 Real-time notifications for appointment confirmations and reminders
+- 📊 View appointment history and medical records
+- ⭐ Rate and review healthcare providers
+- 🔒 Secure messaging with healthcare providers
+</details>
 
-- **Doctor Features**
-  - Manage profile and availability
-  - View and manage appointments
-  - Set consultation fees and specialties
-  - Dashboard with appointment statistics
+<details>
+<summary><b>For Doctors</b></summary>
 
-- **Admin Features**
-  - Manage users (activate/deactivate)
-  - View system-wide statistics
-  - Monitor all appointments
+- 🗓️ Intuitive calendar for managing availability and appointments
+- 📱 Mobile-responsive dashboard for on-the-go access
+- 📊 Analytics and reporting on patient visits and revenue
+- 📝 Digital prescription generation
+- 🔄 Sync with popular calendar applications
+- 📱 Secure patient communication portal
+</details>
 
-## 🛠 Tech Stack
+<details>
+<summary><b>For Administrators</b></summary>
 
-- **Backend**: 
-  - Go 1.20+
-  - Gin Web Framework
-  - GORM ORM
-  - JWT Authentication
-  - PostgreSQL
-  - Swagger for API documentation
+- 👥 User and role management
+- 📈 System-wide analytics and reporting
+- ⚙️ System configuration and settings
+- 📊 Financial reporting and billing
+- 📝 Content management for public pages
+- 🔒 Security and access control
+</details>
 
-- **Frontend**:
-  - React.js 18+
-  - React Router
-  - Axios for API calls
-  - Tailwind CSS for styling
-  - React Context for state management
+## 🛠 Technology Stack
 
-## 🚀 Getting Started
+### Backend
+- **Language**: Go 1.20+
+- **Framework**: [Gin Web Framework](https://github.com/gin-gonic/gin)
+- **ORM**: [GORM](https://gorm.io/)
+- **Authentication**: JWT & OAuth 2.0
+- **Database**: 
+  - Primary: PostgreSQL 13+
+  - Caching: Redis
+- **Search**: Elasticsearch (for doctor search)
+- **API Documentation**: Swagger/OpenAPI 3.0
+- **Testing**: Go testing, Testify, GoMock
+- **CI/CD**: GitHub Actions
+- **Containerization**: Docker
+
+### Frontend
+- **Framework**: React 18+
+- **State Management**: React Context API
+- **Styling**: 
+  - Tailwind CSS
+  - Headless UI
+  - Hero Icons
+- **Form Handling**: React Hook Form
+- **Data Fetching**: React Query
+- **Routing**: React Router v6
+- **Internationalization**: i18next
+- **Testing**: Jest, React Testing Library
+
+### Infrastructure
+- **Container Orchestration**: Kubernetes (EKS)
+- **Infrastructure as Code**: Terraform
+- **Cloud Provider**: AWS
+  - EKS for Kubernetes
+  - RDS for PostgreSQL
+  - ElastiCache for Redis
+  - OpenSearch for Elasticsearch
+  - S3 for file storage
+  - CloudFront CDN
+  - Route 53 for DNS
+- **Monitoring & Logging**:
+  - Prometheus & Grafana
+  - AWS CloudWatch
+  - ELK Stack (Elasticsearch, Logstash, Kibana)
+- **CI/CD**:
+  - GitHub Actions
+  - ArgoCD for GitOps
+  - Helm for Kubernetes package management
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Go 1.20+ ([Installation Guide](https://golang.org/doc/install))
-- Node.js 16+ and npm ([Download Node.js](https://nodejs.org/))
-- PostgreSQL 13+ ([Download PostgreSQL](https://www.postgresql.org/download/))
-- Git ([Download Git](https://git-scm.com/downloads))
+- [Go 1.20+](https://golang.org/doc/install)
+- [Node.js 18+](https://nodejs.org/)
+- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
+- [Terraform](https://www.terraform.io/downloads.html) (for infrastructure)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/) (for Kubernetes)
+- [AWS CLI](https://aws.amazon.com/cli/) (for AWS deployments)
 
-### Backend Setup
+### Local Development
 
 1. **Clone the repository**
    ```bash
    git clone https://github.com/sandipdas/go-doctor-booking.git
-   cd go-doctor-booking/backend
+   cd go-doctor-booking
    ```
 
 2. **Set up environment variables**
    ```bash
-   cp .env.example .env
+   # Backend
+   cp backend/.env.example backend/.env
+   # Frontend
+   cp frontend/.env.example frontend/.env.local
    ```
-   Update the `.env` file with your database credentials and other settings.
 
-3. **Install dependencies**
+3. **Start development environment**
    ```bash
-   go mod download
+   docker-compose -f docker-compose.dev.yml up -d
    ```
 
-4. **Database setup**
-   - Create a new PostgreSQL database
-   - Update the database connection string in `.env`
-   - Run migrations:
-     ```bash
-     go run main.go migrate
-     ```
-
-5. **Start the server**
-   ```bash
-   go run main.go
-   ```
-   The API will be available at `http://localhost:8080`
-
-### Frontend Setup
-
-1. **Navigate to frontend directory**
-   ```bash
-   cd ../frontend
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-   The frontend will be available at `http://localhost:5173`
-
-## 📚 API Documentation
-
-Interactive API documentation is available when the server is running:
-- Swagger UI: `http://localhost:8080/swagger/index.html`
-- JSON Docs: `http://localhost:8080/swagger/doc.json`
-
-## 🌐 API Endpoints
-
-### Authentication
-- `POST /api/v1/auth/register` - Register a new user
-- `POST /api/v1/auth/login` - User login
-
-### Users
-- `GET /api/v1/users/profile` - Get current user profile
-- `PUT /api/v1/users/profile` - Update user profile
-
-### Doctors
-- `GET /api/v1/doctors` - List all doctors
-- `GET /api/v1/doctors/:id` - Get doctor details
-- `GET /api/v1/doctors/dashboard` - Doctor dashboard
-- `POST /api/v1/doctors/schedules` - Create doctor schedule
-- `GET /api/v1/doctors/appointments` - Get doctor's appointments
-
-### Appointments
-- `POST /api/v1/patients/appointments` - Book an appointment
-- `GET /api/v1/patients/appointments` - Get patient's appointments
-- `PUT /api/v1/patients/appointments/:id/cancel` - Cancel an appointment
-
-## 🔧 Environment Variables
-
-See `.env.example` for all available environment variables. Key variables include:
-
-```
-# Server
-PORT=8080
-ENV=development
-
-# Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=yourpassword
-DB_NAME=doctor_booking
-
-# JWT
-JWT_SECRET=your_jwt_secret
-JWT_EXPIRATION=24h
-```
-
-## 🧪 Testing
-
-Run integration tests:
-```bash
-cd backend
-go test -v ./tests/integration/...
-```
-
-## 🐳 Docker Compose
-
-This project uses Docker Compose to manage multiple services in development and production environments.
-
-### Services Overview
-
-The `docker-compose.yml` defines the following services:
-
-1. **db** - PostgreSQL database service
-   - Port: 5432 (mapped to host)
-   - Database: `doctor_booking`
-   - Credentials: postgres/postgres
-   - Data is persisted in a Docker volume
-
-2. **api** - Backend API service
-   - Port: 8080 (mapped to host)
-   - Environment: development
-   - Automatically connects to the database
-   - Hot-reload enabled in development
-
-3. **frontend-dev** - Development frontend
-   - Port: 5173 (mapped to host)
-   - Hot-reloading enabled
-   - Uses local files via volume mounts
-
-4. **frontend-prod** - Production frontend
-   - Port: 8081 (mapped to host)
-   - Serves built static files via Nginx
-   - Optimized for production use
-
-### Prerequisites
-
-- Docker Engine 20.10.0+
-- Docker Compose 2.0.0+
-
-### Quick Start
-
-1. **Build and start all services**
-   ```bash
-   docker-compose up -d --build
-   ```
-
-2. **Access the services**
-   - Frontend (Development): http://localhost:5173
-   - Frontend (Production): http://localhost:8081
+4. **Access the application**
+   - Frontend: http://localhost:5173
    - Backend API: http://localhost:8080
-   - API Documentation: http://localhost:8080/swagger
-   - Database: localhost:5432 (use `doctor_booking` database)
+   - API Documentation: http://localhost:8080/swagger/index.html
+   - Database: localhost:5432 (postgres/postgres)
 
-### Common Commands
+### Running Tests
 
-**Start services** (in background):
 ```bash
-docker-compose up -d
+# Backend tests
+cd backend
+go test -v ./...
+
+# Frontend tests
+cd frontend
+npm test
 ```
-
-**Stop all services**:
-```bash
-docker-compose down
-```
-
-**Rebuild and restart services**:
-```bash
-docker-compose up -d --build
-```
-
-**View logs**:
-```bash
-# View all logs
-docker-compose logs -f
-
-# View specific service logs
-docker-compose logs -f api
-docker-compose logs -f frontend-dev
-docker-compose logs -f db
-```
-
-**Run a command in a service**:
-```bash
-docker-compose exec api sh
-docker-compose exec db psql -U postgres
-```
-
-### Development Workflow
-
-1. **Frontend Development**
-   - The `frontend-dev` service has hot-reloading enabled
-   - Changes to files in the `frontend` directory will be reflected immediately
-   - Access at http://localhost:5173
-
-2. **Backend Development**
-   - The `api` service restarts automatically on code changes
-   - Environment variables can be set in `.env` or in `docker-compose.yml`
-
-3. **Database Management**
-   - Access the database using:
-     ```bash
-     docker-compose exec db psql -U postgres -d doctor_booking
-     ```
-   - Data is persisted in a Docker volume named `postgres_data`
-
-### Production Deployment
-
-For production, it's recommended to:
-1. Set `NODE_ENV=production` and `ENV=production`
-2. Use the `frontend-prod` service which serves optimized static files
-3. Configure proper SSL/TLS for all services
-4. Set up proper database backups
-
-### Environment Variables
-
-Key environment variables used in Docker Compose:
-
-```env
-# Database
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_DB=doctor_booking
-
-# Backend
-DB_HOST=db
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=doctor_booking
-JWT_SECRET=your_jwt_secret_key_here
-ENV=development
-
-# Frontend
-VITE_API_BASE_URL=http://localhost:8080/api/v1
-NODE_ENV=development
-```
-
-### Troubleshooting
-
-- **Port conflicts**: Ensure ports 5432, 8080, 8081, and 5173 are available
-- **Build issues**: Run `docker-compose build --no-cache` to force a clean build
-- **Database connection issues**: Verify the database is running and accessible from the API container
 
 ## 🚀 Deployment
 
-The application can be deployed to AWS EKS using the provided Terraform and Kubernetes configurations. See the [deployment guide](deployment/README.md) for detailed instructions.
+### Prerequisites
 
-### Quick Start
+- AWS account with appropriate permissions
+- Configured AWS CLI
+- Domain name (optional)
 
-1. Set up AWS infrastructure:
-   ```bash
-   cd deployment/terraform
-   terraform init
-   terraform apply -var="db_password=your_secure_password"
-   ```
+### 1. Infrastructure Setup
 
-2. Deploy the application to Kubernetes:
-   ```bash
-   # For staging
-   kubectl apply -k deployment/k8s/overlays/staging
-   
-   # For production
-   kubectl apply -k deployment/k8s/overlays/production
-   ```
+```bash
+cd deployment/terraform
 
-For more details, see the [deployment documentation](deployment/README.md).
+# Initialize Terraform
+-backend-config=/back_end/production.tf 
+
+# Review the execution plan
+terraform plan
+
+# Apply the configuration
+terraform apply
+```
+
+### 2. Configure kubectl
+
+```bash
+aws eks --region $(terraform output -raw aws_region) update-kubeconfig --name $(terraform output -raw cluster_name)
+```
+
+### 3. Deploy Application
+
+```bash
+# For staging
+kubectl apply -k deployment/k8s/overlays/staging
+
+# For production
+kubectl apply -k deployment/k8s/overlays/production
+```
+
+### 4. Access the Application
+
+Get the application URL:
+
+```bash
+kubectl get ingress -n doctor-booking
+```
+
+For detailed deployment instructions, see the [deployment guide](deployment/README.md).
+
+## 📚 Documentation
+
+### API Reference
+
+Interactive API documentation is available when the server is running:
+- **Swagger UI**: `http://localhost:8080/swagger/index.html`
+- **OpenAPI Spec**: `http://localhost:8080/swagger/doc.json`
+
+### Architecture
+
+```
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                 Frontend (React)                              │
+└───────────────────────────────┬───────────────────────────────────────────────┘
+                                │
+┌───────────────────────────────▼───────────────────────────────────────────────┐
+│                               API Gateway                                      │
+└───────────────┬───────────────┬───────────────────┬─────────────────────────┘
+                │               │                   │
+┌───────────────▼───┐   ┌────────▼───────┐   ┌──▼─────────────────────────┐
+│   Auth Service    │   │  Appointments  │   │        Users              │
+└───────────────────┘   └────────────────┘   └───────────────────────────┘
+                                                                             
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                 PostgreSQL                                   │
+└───────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Development Guides
+
+- [Backend Development](docs/development/backend.md)
+- [Frontend Development](docs/development/frontend.md)
+- [Testing](docs/development/testing.md)
+- [API Versioning](docs/development/api-versioning.md)
+
+### Deployment
+
+- [Infrastructure](deployment/README.md)
+- [CI/CD Pipeline](.github/workflows/ci.yml)
+- [Monitoring & Logging](docs/operations/monitoring.md)
+- [Scaling](docs/operations/scaling.md)
 
 ## 🤝 Contributing
 
+We welcome contributions from the community! Here's how you can help:
+
+1. **Report bugs** by opening an issue
+2. **Suggest features** through GitHub issues
+3. **Submit code** via pull requests
+
+### Development Workflow
+
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create a feature branch:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. Make your changes
+4. Run tests and ensure all tests pass
+5. Commit your changes with a descriptive message
+6. Push to your fork and submit a pull request
+
+### Code Style
+
+- **Go**: Follow the [Effective Go](https://golang.org/doc/effective_go.html) guidelines
+- **JavaScript/TypeScript**: Follow [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript)
+- **Commit Messages**: Follow [Conventional Commits](https://www.conventionalcommits.org/)
+
+### Code of Conduct
+
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
 
 ## 📄 License
 
@@ -337,7 +279,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Gin Web Framework
-- GORM ORM
-- React.js
-- And all the amazing open-source libraries used in this project
+- [Gin Web Framework](https://github.com/gin-gonic/gin) - HTTP web framework
+- [React](https://reactjs.org/) - A JavaScript library for building user interfaces
+- [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework
+- [Kubernetes](https://kubernetes.io/) - Container orchestration
+- [Terraform](https://www.terraform.io/) - Infrastructure as Code
+
+## 📬 Contact
+
+For questions or support, please open an issue or contact [your-email@example.com](mailto:your-email@example.com).
+
+---
+
+<div align="center">
+  Made with ❤️ by Sandip Das | © 2025 Doctor Booking System
+</div>
