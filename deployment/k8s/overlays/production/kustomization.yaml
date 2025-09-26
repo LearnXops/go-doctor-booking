@@ -4,6 +4,7 @@ kind: Kustomization
 # Import the base configuration
 resources:
   - ../../base
+  - ingress.yaml
 
 # Override the namespace
 namespace: doctor-booking-production
@@ -28,7 +29,10 @@ patches:
           value: production
       - op: replace
         path: /spec/template/spec/containers/0/image
-        value: your-registry/doctor-booking-api:production
+        value: 211125312702.dkr.ecr.us-east-1.amazonaws.com/doctor-booking-api:production
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
       - op: add
         path: /spec/template/spec/containers/0/resources
         value:
@@ -49,7 +53,10 @@ patches:
         value: 3
       - op: replace
         path: /spec/template/spec/containers/0/image
-        value: your-registry/doctor-booking-frontend:production
+        value: 211125312702.dkr.ecr.us-east-1.amazonaws.com/doctor-booking-frontend:production
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
       - op: add
         path: /spec/template/spec/containers/0/resources
         value:
@@ -60,42 +67,16 @@ patches:
             cpu: "200m"
             memory: "256Mi"
 
-  # Update the ingress for production
+  # Override base Secret values for production (avoid duplicate secret)
   - target:
-      kind: Ingress
-      name: doctor-booking-ingress
+      kind: Secret
+      name: doctor-booking-secrets
     patch: |-
-      - op: replace
-        path: /metadata/name
-        value: doctor-booking-ingress-production
       - op: add
-        path: /spec/rules/0/host
-        value: doctor-booking.example.com
-      - op: add
-        path: /metadata/annotations
+        path: /stringData
         value:
-          cert-manager.io/cluster-issuer: letsencrypt-prod
-          nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-      - op: add
-        path: /spec/tls
-        value:
-          - hosts:
-              - doctor-booking.example.com
-            secretName: doctor-booking-tls
+          DB_PASSWORD: xsa798xas7x9a8s9x78s7x8
+          JWT_SECRET: nxlklsjxalsxsa9xa09sx8a08sx09a8sx
 
-# Add production-specific resources
-resources:
-  - ../../base
-  - certificate.yaml
-
-# Create a production certificate (cert-manager required)
 generatorOptions:
   disableNameSuffixHash: true
-
-secretGenerator:
-  - name: doctor-booking-secrets
-    namespace: doctor-booking-production
-    literals:
-      - DB_PASSWORD=your_secure_production_password
-      - JWT_SECRET=your_secure_jwt_secret
-    type: Opaque

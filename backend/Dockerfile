@@ -1,5 +1,7 @@
 # Build stage
 FROM golang:1.23-alpine AS builder
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /app
 
@@ -9,7 +11,6 @@ RUN apk add --no-cache git
 # Copy go mod and sum files
 COPY go.mod go.sum ./
 
-
 # Download all dependencies
 RUN go mod download
 
@@ -17,7 +18,8 @@ RUN go mod download
 COPY . .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /app/main .
+RUN CGO_ENABLED=0 GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} \
+    go build -ldflags='-s -w' -a -installsuffix cgo -o /app/main .
 
 # Final stage
 FROM alpine:latest
